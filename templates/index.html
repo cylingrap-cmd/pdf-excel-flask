@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PDF'ten Excel'e Dönüştürücü</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f7f6;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .container {
+            background-color: white;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.05);
+            text-align: center;
+            width: 400px;
+        }
+        h1 { color: #2c3e50; margin-top: 0; }
+        p { color: #7f8c8d; margin-bottom: 25px; }
+        input[type="file"] {
+            margin-bottom: 20px;
+            padding: 10px;
+            border: 2px dashed #bdc3c7;
+            border-radius: 8px;
+            width: 100%;
+            box-sizing: border-box;
+            background: #fafafa;
+        }
+        button {
+            background-color: #27ae60;
+            color: white;
+            border: none;
+            padding: 14px 20px;
+            font-size: 16px;
+            font-weight: bold;
+            border-radius: 8px;
+            cursor: pointer;
+            width: 100%;
+            transition: background 0.3s;
+        }
+        button:hover { background-color: #219a52; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>PDF ➔ Excel</h1>
+        <p>Tablo içeren PDF dosyanızı yükleyin</p>
+        
+        <!-- Dosya yükleme formu -->
+        <form action="/donustur" method="POST" enctype="multipart/form-data">
+            <input type="file" name="pdf_dosya" accept=".pdf" required>
+            <button type="submit">Dönüştür ve İndir</button>
+        </form>
+    </div>
+</body>
+</html>
