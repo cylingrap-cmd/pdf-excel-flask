@@ -35,7 +35,13 @@ def donustur():
         
     # 5. Eğer PDF içinde tablo bulduysak, pandas ile bunu Excel'e çeviriyoruz
     if tablo:
-        df = pd.DataFrame(tablo[1:], columns=tablo[0])  # İlk satır başlıklar (columns), kalanı veri
+        # PDF'ten gelen tüm hücreleri okunaklı ve güvenli string'lere çeviriyoruz
+        temiz_tablo = []
+        for satir in tablo:
+            temiz_satir = [str(hucre).replace('\n', ' ').strip() if hucre is not None else "" for hucre in satir]
+            temiz_tablo.append(temiz_satir)
+            
+        df = pd.DataFrame(temiz_tablo[1:], columns=temiz_tablo[0])
         df.to_excel(excel_yolu, index=False)
     else:
         return "Bu PDF'in içinde okunabilir bir tablo bulunamadı."
