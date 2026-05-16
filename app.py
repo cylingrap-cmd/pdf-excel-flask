@@ -28,20 +28,39 @@ def donustur():
     # 3. Çıktı olarak vereceğimiz Excel dosyasının adını ve yerini belirliyoruz
     excel_yolu = os.path.join(UPLOAD_FOLDER, "sonuc.xlsx")
     
-    # 4. pdfplumber ile PDF'i açıp içindeki tabloyu okuyoruz
+    # 4. Çok Sayfalı PDF Desteği: Tüm sayfaları gezip tabloları birleştireceğiz
+    tum_satirlar = []
+    basliklar = None
+
     with pdfplumber.open(pdf_yolu) as pdf:
-        sayfa = pdf.pages[0]           # İlk sayfayı al
-        tablo = sayfa.extract_table()  # Tabloyu çıkart
-        
-    # 5. Eğer PDF içinde tablo bulduysak, pandas ile bunu Excel'e çeviriyoruz
-    if tablo:
-        # PDF'ten gelen tüm hücreleri okunaklı ve güvenli string'lere çeviriyoruz
-        temiz_tablo = []
-        for satir in tablo:
-            temiz_satir = [str(hucre).replace('\n', ' ').strip() if hucre is not None else "" for hucre in satir]
-            temiz_tablo.append(temiz_satir)
+        for sayfa in pdf.pages:
+            tablo = sayfa.extract_table()
+            if not tablo:
+                continue # Bu sayfada tablo yoksa diğer sayfaya geç
+                
+            # İlk sayfada başlıkları belirliyoruz
+            if basliklar is None:
+                basliklar = [str(h).replace('\n', ' ').strip() if h is not None else "" for h in tablo[0]]
+                baslangic_index = 1 # İlk satırı başlık yaptık, veriye 2. satırdan başla
+            else:
+                # Diğer sayfalarda PDF bazen başlığı tekrar yazar, aynıysa onu atlıyoruz
+                ilk_satir = [str(h).replace('\n', ' ').strip() if h is not None else "" for h in tablo[0]]
+                if ilk_satir == basliklar:
+                    baslangic_index = 1
+                else:
+                    baslangic_index = 0
             
-        df = pd.DataFrame(temiz_tablo[1:], columns=temiz_tablo[0])
+            # Verileri satır satır temizleyip genel listeye ekliyoruz
+            for satir in tablo[baslangic_index:]:
+                temiz_satir = [str(h).replace('\n', ' ').strip() if h is not None else "" for h in satir]
+                
+                # Sadece tamamen boş olmayan ve sütun sayısı başlıkla eşleşen satırları al (temiz çıktı)
+                if any(temiz_satir) and len(temiz_satir) == len(basliklar):
+                    tum_satirlar.append(temiz_satir)
+
+    # 5. Pandas ile birleştirilmiş veriyi Excel'e çeviriyoruz
+    if basliklar and tum_satirlar:
+        df = pd.DataFrame(tum_satirlar, columns=basliklar)
         df.to_excel(excel_yolu, index=False)
     else:
         return "Bu PDF'in içinde okunabilir bir tablo bulunamadı."
